@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Minha IA — Assistente</title>
+<style>
+:root{
+  --bg:#eef2ff;--panel:#ffffff;--text:#172033;--muted:#64748b;
+  --primary:#4f46e5;--primary2:#7c3aed;--border:#e2e8f0;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(135deg,#eef2ff,#f8fafc);color:var(--text)}
+.app{max-width:820px;margin:auto;min-height:100vh;display:flex;flex-direction:column}
+header{padding:18px 18px 16px;color:#fff;background:linear-gradient(135deg,#111827,#312e81);box-shadow:0 3px 15px #0002}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,#6366f1,#a855f7);display:grid;place-items:center;font-size:24px;box-shadow:0 5px 15px #0003}
+h1{margin:0;font-size:21px}
+.subtitle{margin:3px 0 0;font-size:13px;opacity:.8}
+.badge{margin-left:auto;background:#ffffff18;border:1px solid #ffffff25;border-radius:20px;padding:7px 10px;font-size:11px}
+#chat{flex:1;padding:20px 15px 100px;overflow-y:auto}
+.welcome{background:#fff;border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 8px 25px #312e8110;margin-bottom:18px}
+.welcome h2{margin:0 0 7px;font-size:18px}
+.welcome p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+.suggestions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.suggestion{border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:18px;padding:8px 11px;font-size:12px}
+.msg{max-width:88%;padding:13px 15px;margin:11px 0;border-radius:18px;line-height:1.55;white-space:pre-wrap;box-shadow:0 3px 12px #00000008}
+.ia{background:#fff;border:1px solid var(--border);margin-right:auto;border-bottom-left-radius:5px}
+.user{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;margin-left:auto;border-bottom-right-radius:5px}
+.meta{font-size:10px;opacity:.55;margin-top:5px}
+.status{position:fixed;bottom:83px;left:50%;transform:translateX(-50%);background:#ffffffeb;border:1px solid var(--border);backdrop-filter:blur(8px);border-radius:20px;padding:6px 11px;font-size:11px;color:var(--muted);box-shadow:0 4px 15px #0001}
+.composer{position:fixed;bottom:0;left:0;right:0;padding:10px;background:#ffffffee;border-top:1px solid var(--border);backdrop-filter:blur(12px)}
+.composer-inner{max-width:820px;margin:auto;display:flex;gap:8px;align-items:flex-end}
+textarea{flex:1;resize:none;min-height:48px;max-height:120px;border:1px solid #cbd5e1;border-radius:17px;padding:13px 14px;font-size:16px;outline:none;background:#f8fafc}
+textarea:focus{border-color:#818cf8;box-shadow:0 0 0 3px #818cf833}
+button{border:0;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;width:50px;height:50px;font-size:20px;box-shadow:0 5px 14px #4f46e144}
+button:disabled{opacity:.55}
+.footer{max-width:820px;margin:6px auto 0;text-align:center;font-size:10px;color:#94a3b8}
+@media(max-width:600px){.badge{display:none}#chat{padding-top:15px}.msg{max-width:93%}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand">
+    <div class="logo">🤖</div>
+    <div><h1>Minha IA</h1><div class="subtitle">Assistente pessoal • Versão 1.5</div></div>
+    <div class="badge">● ONLINE LOCAL</div>
+  </div>
+</header>
+
+<main id="chat">
+  <div class="welcome">
+    <h2>Olá! 👋 Vamos começar?</h2>
+    <p>Sou o teu assistente de demonstração. Escolhe uma sugestão ou escreve qualquer pergunta abaixo.</p>
+    <div class="suggestions">
+      <button class="suggestion" onclick="quick('O que é investimento?')">📈 Investimento</button>
+      <button class="suggestion" onclick="quick('Ajuda-me a estudar')">📚 Estudo</button>
+      <button class="suggestion" onclick="quick('Ajuda-me a criar um livro')">📖 Livro</button>
+      <button class="suggestion" onclick="quick('Como criar um site?')">🌐 Site</button>
+    </div>
+  </div>
+</main>
+
+<div id="status" class="status">● Pronta para conversar</div>
+
+<div class="composer">
+  <div class="composer-inner">
+    <textarea id="input" placeholder="Escreve a tua pergunta..." rows="1"></textarea>
+    <button id="send" aria-label="Enviar">➤</button>
+  </div>
+  <div class="footer">Protótipo local • A próxima versão poderá usar uma IA online real<br><strong>Assinatura: Mussate</strong></div>
+</div>
+</div>
+
+<script>
+const chat=document.getElementById("chat"),input=document.getElementById("input"),send=document.getElementById("send"),status=document.getElementById("status");
+
+function addMessage(text,type){
+ const div=document.createElement("div");
+ div.className="msg "+type;
+ div.textContent=text;
+ chat.appendChild(div);
+ const meta=document.createElement("div");
+ meta.className="meta";
+ meta.textContent=type==="ia"?"Minha IA":"Tu";
+ div.appendChild(meta);
+ chat.scrollTop=chat.scrollHeight;
+}
+
+function answer(q){
+ const x=q.toLowerCase();
+ if(x.includes("olá")||x.includes("ola")||x==="oi") return "Olá! 👋 É um prazer conversar contigo. Esta é a interface melhorada da tua IA.";
+ if(x.includes("investimento")||x.includes("investir")||x.includes("ações")||x.includes("acoes")) return "Investir significa aplicar dinheiro esperando obter um retorno. Antes de investir, é importante compreender risco, prazo, custos e diversificação.";
+ if(x.includes("livro")||x.includes("escrever")) return "Posso ajudar a estruturar um livro em capítulos, desenvolver ideias, revisar textos e preparar uma estrutura para publicação.";
+ if(x.includes("estudo")||x.includes("estudar")) return "Uma boa estratégia é dividir o tema em partes, compreender os conceitos, praticar com exercícios e revisar o conteúdo.";
+ if(x.includes("site")||x.includes("html")||x.includes("internet")) return "Um site pode ser construído com HTML, CSS e JavaScript. Depois, os ficheiros podem ser publicados num serviço de hospedagem.";
+ if(x.includes("quem és")||x.includes("quem e")) return "Sou a Minha IA, um protótipo de assistente criado para funcionar diretamente no navegador.";
+ return 'Entendi: "'+q+'"\n\nEsta versão tem uma interface melhorada e respostas locais de demonstração. O próximo passo é ligá-la a um modelo de IA real através de um servidor seguro.';
+}
+
+function quick(text){input.value=text;sendMessage()}
+function sendMessage(){
+ const text=input.value.trim();if(!text)return;
+ addMessage(text,"user");input.value="";send.disabled=true;status.textContent="● A preparar resposta...";
+ setTimeout(()=>{addMessage(answer(text),"ia");send.disabled=false;status.textContent="● Pronta para conversar";input.focus()},350);
+}
+send.onclick=sendMessage;
+input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}});
+</script>
+</body>
+</html>
